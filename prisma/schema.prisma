@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  password    String
+  role        String   @default("user") // admin, user
+  maps        Map[]
+  subscriptions Subscription[]
+  favorites   Favorite[]
+  history     NavigationHistory[]
+  comments    Comment[]
+  styles      MapStyle[]
+}
+
+model Map {
+  id          String   @id @default(uuid())
+  name        String
+  type        String // public, private
+  owner       User    @relation(fields: [ownerId], references: [id])
+  ownerId     String
+  places      Place[]
+  routes      Route[]
+  traffic     TrafficData[]
+  weather     WeatherData[]
+  events      Event[]
+}
+
+model Place {
+  id          String    @id @default(uuid())
+  name        String
+  type        String
+  latitude    Float
+  longitude   Float
+  map         Map       @relation(fields: [mapId], references: [id])
+  mapId       String
+  media       Media[]
+  comments    Comment[]
+  favorites   Favorite[]
+}
+
+model Route {
+  id          String   @id @default(uuid())
+  name        String
+  originId    String
+  destinationId String
+  distance    Float
+  duration    Int
+  map         Map      @relation(fields: [mapId], references: [id])
+  mapId       String
+  comments    Comment[]
+  favorites   Favorite[]
+}
+
+model Favorite {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  place      Place?   @relation(fields: [placeId], references: [id])
+  placeId    String?
+  route      Route?   @relation(fields: [routeId], references: [id])
+  routeId    String?
+}
+
+model Subscription {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  planType   String
+  expiration DateTime
+}
+
+model TrafficData {
+  id         String   @id @default(uuid())
+  trafficLevel String
+  timestamp  DateTime
+  map        Map      @relation(fields: [mapId], references: [id])
+  mapId      String
+}
+
+model WeatherData {
+  id         String   @id @default(uuid())
+  temperature Float
+  conditions String
+  timestamp  DateTime
+  map        Map      @relation(fields: [mapId], references: [id])
+  mapId      String
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  text       String
+  rating     Int
+  place      Place?   @relation(fields: [placeId], references: [id])
+  placeId    String?
+  route      Route?   @relation(fields: [routeId], references: [id])
+  routeId    String?
+}
+
+model Media {
+  id         String   @id @default(uuid())
+  url        String
+  type       String
+  place      Place?   @relation(fields: [placeId], references: [id])
+  placeId    String?
+}
+
+model NavigationHistory {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  timestamp  DateTime @default(now())
+  action     String
+  details    String?
+}
+
+model MapStyle {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  name       String
+  style      Json
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+  map         Map      @relation(fields: [mapId], references: [id])
+  mapId       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
