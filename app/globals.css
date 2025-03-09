@@ -1,5 +1,6 @@
-@import "tailwindcss";
-@import "flexmonster/flexmonster.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @theme {
   --font-sans: var(--font-geist-sans);
